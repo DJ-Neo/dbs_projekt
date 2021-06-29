@@ -1,125 +1,122 @@
-import matplotlib
-matplotlib.use("TkAgg")
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-from matplotlib.figure import Figure
+import dash
+import dash_html_components as html
+import dash_core_components as dcc
+import plotly.express as px
+from dash.dependencies import Input, Output
 
-import tkinter as tk
-from tkinter import ttk
+df = px.data.iris()
 
-LARGE_FONT= ("Verdana", 12)
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-class SeaofBTCapp(tk.Tk):
+app.layout = html.Div([
+    html.H1("DBS Projekt"),
 
-    def __init__(self, *args, **kwargs):
-        
-        tk.Tk.__init__(self, *args, **kwargs)
+    #Graph
+    dcc.Graph(id="scatter-plot"),
+    
+    #Eingabe Buttons
+    html.Div([
+        html.P("Einfluss BIP auf erneuerbare Energien"),
+        html.Button('Button 1', id='btn-1'),
+        html.P("Einfluss BIP/Kopf auf erneuerbare Energien"),
+        html.Button('Button 2', id='btn-2'),
+        html.P("Auswirkung der Nutzung erneuerbarer Energien auf die CO2-Emission eines Landes"),
+        html.Button('Button 3', id='btn-3'),
+        ],
+        style={
+                "backgroundColor": "#DDDDDD",
+                "padding": "10px 20px",
+                "display": "block"
+        },
+    ),
 
-        tk.Tk.iconbitmap(self, default="clienticon.ico")
-        tk.Tk.wm_title(self, "Sea of BTC client")
-        
-        
-        container = tk.Frame(self)
-        container.pack(side="top", fill="both", expand = True)
-        container.grid_rowconfigure(0, weight=1)
-        container.grid_columnconfigure(0, weight=1)
+    #Filter Slider + Dropdown
+    html.Div([
+        html.Div([
+            html.P("Zeitraum"),
+            dcc.RangeSlider(
+            id='range-slider_zeitraum',
+            min=1960, max=2019, step=1,
+            marks={1960: '1960', 2019: '2019'},
+            value=[1960, 2019]
+            )    
+        ]), 
+        html.Div([
+            html.P("Länder"),
+            dcc.Dropdown(
+            id="dropdown_laender",
+            options=[
+                {"label": "World", "value": "world"},
+                {"label": "Germany", "value": "GER"},
+                {"label": "France", "value": "FR"},
+                ],
+            value="normal",
+            )
+        ]),
+        html.Div([
+            html.P("BIP (* 1.000.000.000)"),
+            dcc.RangeSlider(
+            id='range-slider_BIP',
+            min=0, max=30000, step=0.1,
+            marks={0: '0$', 30000: '30.000$'},
+            value=[0, 30000]
+            )
+        ]),
+        html.Div([
+            html.P("CO2 Emission"),
+            dcc.RangeSlider(
+            id='range-slider_emission',
+            min=0, max=2.5, step=0.1,
+            marks={0: '0', 2.5: '2.5'},
+            value=[0.5, 2]
+            )
+        ]),
+        html.Div([
+            html.P("Anteil erneuerbarer Energien"),
+            dcc.RangeSlider(
+            id='range-slider_ern-energien',
+            min=0, max=30, step=0.1,
+            marks={0: '0%', 30: '30%'},
+            value=[0, 30]
+            )
+        ])
+    ],
+    style={
+                "backgroundColor": "#DDDDDD",
+                "marginTop": "10px",
+                "padding": "10px 20px",
+            },
+    )
+    #html.Button('START', id='btn-start', n_clicks=0),
+])
 
-        self.frames = {}
+""" @app.callback(Output("scatter-plot", "figure"),
+              Input('btn-nclicks-1', 'n_clicks'),
+              Input('btn-nclicks-2', 'n_clicks'),
+              Input('btn-nclicks-3', 'n_clicks')) """
 
-        for F in (StartPage, PageOne, PageTwo, PageThree):
+""" def displayClick(btn1, btn2, btn3):
+    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+    if 'btn1' in changed_id:
+        msg = 'Do plot1 (BIP -> erneuerbare Energie)'
+    elif 'btn-nclicks-2' in changed_id:
+        msg = 'Do plot2 (BIP(Kopf) -> erneuerbare Energie)'
+    elif 'btn-nclicks-3' in changed_id:
+        msg = 'Do plot3 (Auswirkung auf CO2 Belastung)'
+    else:
+        msg = 'None of the buttons have been clicked yet'
+    return html.Div(msg) """
 
-            frame = F(container, self)
+""" def update_bar_chart(slider_range):
+    low, high = slider_range
+    mask = (df.petal_width > low) & (df.petal_width < high)
 
-            self.frames[F] = frame
+    fig = px.scatter_3d(df[mask], 
+        x='sepal_length', y='sepal_width', z='petal_width',
+        color="species", hover_data=['petal_width'])
+    return fig """
 
-            frame.grid(row=0, column=0, sticky="nsew")
-
-        self.show_frame(StartPage)
-
-    def show_frame(self, cont):
-
-        frame = self.frames[cont]
-        frame.tkraise()
-
-        
-class StartPage(tk.Frame):
-
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self,parent)
-        label = tk.Label(self, text="Start Page", font=LARGE_FONT)
-        label.pack(pady=10,padx=10)
-
-        button = ttk.Button(self, text="Visit Page 1",
-                            command=lambda: controller.show_frame(PageOne))
-        button.pack()
-
-        button2 = ttk.Button(self, text="Visit Page 2",
-                            command=lambda: controller.show_frame(PageTwo))
-        button2.pack()
-
-        button3 = ttk.Button(self, text="Graph Page",
-                            command=lambda: controller.show_frame(PageThree))
-        button3.pack()
-
-
-class PageOne(tk.Frame):
-
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Page One!!!", font=LARGE_FONT)
-        label.pack(pady=10,padx=10)
-
-        button1 = ttk.Button(self, text="Back to Home",
-                            command=lambda: controller.show_frame(StartPage))
-        button1.pack()
-
-        button2 = ttk.Button(self, text="Page Two",
-                            command=lambda: controller.show_frame(PageTwo))
-        button2.pack()
-
-
-class PageTwo(tk.Frame):
-
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Page Two!!!", font=LARGE_FONT)
-        label.pack(pady=10,padx=10)
-
-        button1 = ttk.Button(self, text="Back to Home",
-                            command=lambda: controller.show_frame(StartPage))
-        button1.pack()
-
-        button2 = ttk.Button(self, text="Page One",
-                            command=lambda: controller.show_frame(PageOne))
-        button2.pack()
-
-
-class PageThree(tk.Frame):
-
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Graph Page!", font=LARGE_FONT)
-        label.pack(pady=10,padx=10)
-
-        button1 = ttk.Button(self, text="Back to Home",
-                            command=lambda: controller.show_frame(StartPage))
-        button1.pack()
-
-        f = Figure(figsize=(5,5), dpi=100)
-        a = f.add_subplot(111)
-        a.plot([1,2,3,4,5,6,7,8],[5,6,1,3,8,9,3,5])
-
-        
-
-        canvas = FigureCanvasTkAgg(f, self)
-        canvas.show()
-        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
-
-        toolbar = NavigationToolbar2TkAgg(canvas, self)
-        toolbar.update()
-        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-
-        
-
-app = SeaofBTCapp()
-app.mainloop()
+if __name__ == '__main__':
+    app.run_server(debug=True)
