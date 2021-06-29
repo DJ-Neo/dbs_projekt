@@ -2,19 +2,31 @@ import dash
 import dash_html_components as html
 import dash_core_components as dcc
 import plotly.express as px
+import plotly.graph_objs as go
 from dash.dependencies import Input, Output
 
-df = px.data.iris()
+import pandas as pd
+
+#import test-csv
+df = pd.read_csv("testing/p.csv")
+
+#data
+fig = px.scatter_3d(df, x='Year', y='CO2', z='CO2', color='CO2')
+
+
+#tight layout
+fig.update_layout(title ='3d figure', margin=dict(l=0, r=0, b=0, t=0))
+
+# ------------- CREATING SITE ---------------------#
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.layout = html.Div([
     html.H1("DBS Projekt"),
 
     #Graph
-    dcc.Graph(id="scatter-plot"),
+    dcc.Graph(id="bubble", figure=fig),
     
     #Eingabe Buttons
     html.Div([
@@ -89,34 +101,8 @@ app.layout = html.Div([
                 "padding": "10px 20px",
             },
     )
-    #html.Button('START', id='btn-start', n_clicks=0),
 ])
 
-""" @app.callback(Output("scatter-plot", "figure"),
-              Input('btn-nclicks-1', 'n_clicks'),
-              Input('btn-nclicks-2', 'n_clicks'),
-              Input('btn-nclicks-3', 'n_clicks')) """
-
-""" def displayClick(btn1, btn2, btn3):
-    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-    if 'btn1' in changed_id:
-        msg = 'Do plot1 (BIP -> erneuerbare Energie)'
-    elif 'btn-nclicks-2' in changed_id:
-        msg = 'Do plot2 (BIP(Kopf) -> erneuerbare Energie)'
-    elif 'btn-nclicks-3' in changed_id:
-        msg = 'Do plot3 (Auswirkung auf CO2 Belastung)'
-    else:
-        msg = 'None of the buttons have been clicked yet'
-    return html.Div(msg) """
-
-""" def update_bar_chart(slider_range):
-    low, high = slider_range
-    mask = (df.petal_width > low) & (df.petal_width < high)
-
-    fig = px.scatter_3d(df[mask], 
-        x='sepal_length', y='sepal_width', z='petal_width',
-        color="species", hover_data=['petal_width'])
-    return fig """
 
 if __name__ == '__main__':
     app.run_server(debug=True)
