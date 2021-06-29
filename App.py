@@ -8,12 +8,10 @@ from dash.dependencies import Input, Output
 import pandas as pd
 
 #import test-csv
-df_test = pd.read_csv("testing/p.csv")
-
-df_laender = pd.read_csv("")
+df = pd.read_csv("testing/p.csv")
 
 #data
-fig = px.scatter_3d(df_test, x='Year', y='CO2', z='CO2', color='CO2')
+fig = px.scatter_3d(df, x='Year', y='CO2', z='CO2', color='CO2')
 
 
 #tight layout
@@ -53,7 +51,7 @@ app.layout = html.Div([
         html.Div([
             html.P("Länder"),
             dcc.Dropdown(
-            id="dropdown_laender",
+            id="dd_laender",
             options=[
                 {"label": "World", "value": "world"},
                 {"label": "Germany", "value": "GER"},
@@ -65,7 +63,7 @@ app.layout = html.Div([
         html.Div([
             html.P("Zeitraum"),
             dcc.RangeSlider(
-            id='range-slider_zeitraum',
+            id='rs-zeitraum',
             min=1960, max=2019, step=1,
             marks={1960: '1960', 2019: '2019'},
             value=[1960, 2019]
@@ -74,7 +72,7 @@ app.layout = html.Div([
         html.Div([
             html.P("BIP (* 1.000.000.000)"),
             dcc.RangeSlider(
-            id='range-slider_BIP',
+            id='rs-bip',
             min=0, max=30000, step=0.1,
             marks={0: '0$', 30000: '30.000$'},
             value=[0, 30000]
@@ -83,7 +81,7 @@ app.layout = html.Div([
         html.Div([
             html.P("CO2 Emission"),
             dcc.RangeSlider(
-            id='range-slider_emission',
+            id='rs-emission',
             min=0, max=2.5, step=0.1,
             marks={0: '0', 2.5: '2.5'},
             value=[0.5, 2]
@@ -92,7 +90,7 @@ app.layout = html.Div([
         html.Div([
             html.P("Anteil erneuerbarer Energien"),
             dcc.RangeSlider(
-            id='range-slider_ern-energien',
+            id='rs-ernEnergien',
             min=0, max=30, step=0.1,
             marks={0: '0%', 30: '30%'},
             value=[0, 30]
@@ -109,17 +107,33 @@ app.layout = html.Div([
 
 @app.callback(
     Output("3d-graph", "fig"),
+    [
+        Input("btn-1", "n_clicks"),
+        Input("btn-2", "n_clicks"),
+        Input("btn-3", "n_clicks"),
 
-    Input("btn-1", "n_clicks"),
-    Input("btn-2", "n_clicks"),
-    Input("btn-3", "n_clicks"),
+        Input("dd-laender", "value"),
 
-    Input("dropdown-laender", "value"),
-    Input("range-slider-zeitraum", "value"),
-    Input("range-slider_BIP", "value"),
-    Input("range-slider_emission", "value"),
-    Input("range-slider_ern-energien", "value"),
+        Input("rs-zeitraum", "value"),
+        Input("rs-bip", "value"),
+        Input("rs-emission", "value"),
+        Input("rs-ernEnergie", "value")],
 )
+
+def updateGraph(btn1, btn2, btn3, laender, zeitraum, bip, emission, ernEnergie):
+    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+    #Einfluss BIP auf erneuerbare Energien
+    if "btn-1" in changed_id:
+        fig = px.scatter_3d(df, x='Year', y='CO2', z='CO2', color='CO2')
+        fig.update_layout(title ='3d figure', margin=dict(l=0, r=0, b=0, t=0))
+    elif "btn-2" in changed_id:
+        fig = px.scatter_3d(df, x='Year', y='Year', z='Year', color='CO2')
+        fig.update_layout(title ='3d figure', margin=dict(l=0, r=0, b=0, t=0))
+    elif "btn-3" in changed_id:
+        fig = px.scatter_3d(df, x='CO2', y='CO2', z='CO2', color='CO2')
+        fig.update_layout(title ='3d figure', margin=dict(l=0, r=0, b=0, t=0))
+    return fig
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
