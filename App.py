@@ -8,14 +8,18 @@ from dash.dependencies import Input, Output
 import pandas as pd
 
 #import test-csv
-df = pd.read_csv("testing/p.csv")
+df_test = pd.read_csv("testing/p.csv")
+
+df_laender = pd.read_csv("")
 
 #data
-fig = px.scatter_3d(df, x='Year', y='CO2', z='CO2', color='CO2')
+fig = px.scatter_3d(df_test, x='Year', y='CO2', z='CO2', color='CO2')
 
 
 #tight layout
 fig.update_layout(title ='3d figure', margin=dict(l=0, r=0, b=0, t=0))
+
+
 
 # ------------- CREATING SITE ---------------------#
 
@@ -26,7 +30,7 @@ app.layout = html.Div([
     html.H1("DBS Projekt"),
 
     #Graph
-    dcc.Graph(id="bubble", figure=fig),
+    dcc.Graph(id="3d-graph", figure=fig),
     
     #Eingabe Buttons
     html.Div([
@@ -47,15 +51,6 @@ app.layout = html.Div([
     #Filter Slider + Dropdown
     html.Div([
         html.Div([
-            html.P("Zeitraum"),
-            dcc.RangeSlider(
-            id='range-slider_zeitraum',
-            min=1960, max=2019, step=1,
-            marks={1960: '1960', 2019: '2019'},
-            value=[1960, 2019]
-            )    
-        ]), 
-        html.Div([
             html.P("Länder"),
             dcc.Dropdown(
             id="dropdown_laender",
@@ -67,6 +62,15 @@ app.layout = html.Div([
             value="normal",
             )
         ]),
+        html.Div([
+            html.P("Zeitraum"),
+            dcc.RangeSlider(
+            id='range-slider_zeitraum',
+            min=1960, max=2019, step=1,
+            marks={1960: '1960', 2019: '2019'},
+            value=[1960, 2019]
+            )    
+        ]), 
         html.Div([
             html.P("BIP (* 1.000.000.000)"),
             dcc.RangeSlider(
@@ -103,6 +107,19 @@ app.layout = html.Div([
     )
 ])
 
+@app.callback(
+    Output("3d-graph", "fig"),
+
+    Input("btn-1", "n_clicks"),
+    Input("btn-2", "n_clicks"),
+    Input("btn-3", "n_clicks"),
+
+    Input("dropdown-laender", "value"),
+    Input("range-slider-zeitraum", "value"),
+    Input("range-slider_BIP", "value"),
+    Input("range-slider_emission", "value"),
+    Input("range-slider_ern-energien", "value"),
+)
 
 if __name__ == '__main__':
     app.run_server(debug=True)
