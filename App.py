@@ -14,10 +14,10 @@ import pandas as pd
 df = pd.read_csv("testing/p.csv")
 
 #Ausgangsgraph erstellen
-fig = px.scatter_3d(df, x='Year', y='CO2', z='CO2', color='CO2')
 
-sql_df = sql_wrangling.get_df_for_button1()
 
+init_df = sql_wrangling.get_df_for_button1()
+init_fig = px.line_3d(init_df, x='year', y='gdp', z='perc_renen', color='countryname')
 
 dp_options = sql_wrangling.getcountries()
 
@@ -31,7 +31,7 @@ app.layout = html.Div([
     html.H1("DBS Projekt"),
 
     # Graph
-    dcc.Graph(id="3d-graph", figure=fig),
+    dcc.Graph(id="3d-graph", figure=init_fig),
 
     # Filter Slider + Dropdown
     html.Div([
@@ -136,7 +136,7 @@ def updateGraph(fig, btn1, btn2, btn3, laender, zeitraum, bip, emission, ernEner
     emission_min, emission_max = emission
     ernEn_min, ernEn_max = ernEnergie
 
-    mask = (df.year > zeit_min) & (df.year < zeit_max) & (df.gdp > bip_min) & (df.gdp < bip_max) & (df.perc_renen > ernEn_min) & (df.perc_renen < ernEn_max)
+    #mask = (df.year > zeit_min) & (df.year < zeit_max) & (df.gdp > bip_min) & (df.gdp < bip_max) & (df.perc_renen > ernEn_min) & (df.perc_renen < ernEn_max)
 
 
     #Check, welcher Parameter als letztes bedient wurde, falls einer der Knöpfe -> Veränderung des Graphens
@@ -149,14 +149,16 @@ def updateGraph(fig, btn1, btn2, btn3, laender, zeitraum, bip, emission, ernEner
         #SQL Query liefert Daten für dataframe
 
         #fig = px.scatter_3d(df, x='Year', y='CO2', z='CO2', color='CO2')
-        fig = px.line_3d(sql_df, x='year', y='gdp', z='perc_renen', color='countryname')
+        local_df = sql_wrangling.get_df_for_button1()
+        fig = px.line_3d(local_df, x='year', y='gdp', z='perc_renen', color='countryname')
         
 
     # Einfluss BIP/Kopf auf erneuerbare Energien
     elif 'btn-2' in changed_id:
         #Funktion mit output df (dataframe) mit BIP/Kopf, Anteil ern. Energien, Jahr -> Länder einfärben
         #SQL Query liefert Daten für dataframe
-        fig = px.scatter_3d(df, x='Year', y='Year', z='Year', color='CO2')
+        local_df = sql_wrangling.get_df_for_button2()
+        fig = px.line_3d(local_df, x='year', y='gdp_per_capita', z='perc_renen', color='countryname')
 
     # Einfluss ern. Energien auf CO2 Emission
     elif 'btn-3' in changed_id:
@@ -170,3 +172,5 @@ def updateGraph(fig, btn1, btn2, btn3, laender, zeitraum, bip, emission, ernEner
 
 if __name__ == '__main__':
     app.run_server(debug=True)
+
+   
