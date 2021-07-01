@@ -136,6 +136,8 @@ def updateGraph(fig, btn1, btn2, btn3, laender, zeitraum, bip, emission, ernEner
     emission_min, emission_max = emission
     ernEn_min, ernEn_max = ernEnergie
 
+    mask = (df.year > zeit_min) & (df.year < zeit_max) & (df.gdp > bip_min) & (df.gdp < bip_max) & (df.perc_renen > ernEn_min) & (df.perc_renen < ernEn_max)
+
 
     #Check, welcher Parameter als letztes bedient wurde, falls einer der Knöpfe -> Veränderung des Graphens
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
@@ -147,7 +149,7 @@ def updateGraph(fig, btn1, btn2, btn3, laender, zeitraum, bip, emission, ernEner
         #SQL Query liefert Daten für dataframe
 
         #fig = px.scatter_3d(df, x='Year', y='CO2', z='CO2', color='CO2')
-        fig = px.scatter_3d(sql_df, x='year', y='gdp', z='perc_renen', color='countryname')
+        fig = px.line_3d(sql_df, x='year', y='gdp', z='perc_renen', color='countryname')
         
 
     # Einfluss BIP/Kopf auf erneuerbare Energien
