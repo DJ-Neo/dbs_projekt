@@ -2,7 +2,8 @@ SELECT
 	year(tgdp),
 	gdp(tgdp),
 	(renen.annualproduction / (pren.annualsupply*1000))*100  AS perc_renen,
-	countryname(cc)
+	countryname(cc),
+	countrycode(cc)
 
 FROM
 	project.gdp AS tgdp,

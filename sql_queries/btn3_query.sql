@@ -2,7 +2,8 @@ SELECT
 	year(tgdp),
     (renen.annualproduction / (pren.annualsupply*1000))*100  AS perc_renen,
 	annualemissions(co2),
-	countryname(cc)
+	countryname(cc),
+	countrycode(cc)
 
 FROM
 	project.gdp AS tgdp,
