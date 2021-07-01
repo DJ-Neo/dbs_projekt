@@ -22,13 +22,17 @@ def getcountries():
 
     return df.to_dict("records")
 
-# Einfluss BIP auf erneuerbare Energien
-def get_df_for_button1(): #country_code, zeit_min, zeit_max, bip_min, bip_max, ernEn_min, ernEn_max
+
+def get_df_for_button1():
     return connect(open("sql_queries/btn1_query.sql", "r").read())
 
 def get_df_for_button2():
     return connect(open("sql_queries/btn2_query.sql", "r").read())
 
+def get_df_for_button3():
+    return connect(open("sql_queries/btn3_query.sql", "r").read())
 
 
+def fix_df_rows(df):
     
+    return df

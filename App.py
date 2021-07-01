@@ -4,11 +4,11 @@ import dash_core_components as dcc
 from pandas._config.config import options
 import plotly.express as px
 from dash.dependencies import Input, Output
-import psycopg2
-
-import sql_wrangling
 
 import pandas as pd
+import sql_wrangling as sw
+
+
 
 # importieren einer test-csv, später alle Daten via SQL-Query
 df = pd.read_csv("testing/p.csv")
@@ -16,10 +16,10 @@ df = pd.read_csv("testing/p.csv")
 #Ausgangsgraph erstellen
 
 
-init_df = sql_wrangling.get_df_for_button1()
+init_df = sw.get_df_for_button1()
 init_fig = px.line_3d(init_df, x='year', y='gdp', z='perc_renen', color='countryname')
 
-dp_options = sql_wrangling.getcountries()
+dp_options = sw.getcountries()
 
 
 # ------------- CREATING SITE ---------------------#
@@ -102,7 +102,6 @@ app.layout = html.Div([
     ),
 ])
 
-
 @app.callback(
     #Output ist nur der Graph
     Output("3d-graph", "figure"),
@@ -127,50 +126,44 @@ app.layout = html.Div([
 #wird jedes Mal ausgeführt, falls neuer Input (also Regler verändert wurden) <- muss deshalb NICHT extra aufgerufen werden
 def updateGraph(fig, btn1, btn2, btn3, laender, zeitraum, bip, emission, ernEnergie):
    
+
     #alle Variablen deklarieren
     country_code = laender
-    
     
     zeit_min, zeit_max = zeitraum
     bip_min, bip_max = bip
     emission_min, emission_max = emission
     ernEn_min, ernEn_max = ernEnergie
 
-    #mask = (df.year > zeit_min) & (df.year < zeit_max) & (df.gdp > bip_min) & (df.gdp < bip_max) & (df.perc_renen > ernEn_min) & (df.perc_renen < ernEn_max)
-
-
     #Check, welcher Parameter als letztes bedient wurde, falls einer der Knöpfe -> Veränderung des Graphens
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
     
 
     # Einfluss BIP auf erneuerbare Energien
+    # Funktion mit output df (dataframe) mit BIP, Anteil ern. Energien, Jahr -> Länder einfärben
     if 'btn-1' in changed_id:
-        #Funktion mit output df (dataframe) mit BIP, Anteil ern. Energien, Jahr -> Länder einfärben
-        #SQL Query liefert Daten für dataframe
-
-        #fig = px.scatter_3d(df, x='Year', y='CO2', z='CO2', color='CO2')
-        local_df = sql_wrangling.get_df_for_button1()
+        local_df = sw.get_df_for_button1()
         fig = px.line_3d(local_df, x='year', y='gdp', z='perc_renen', color='countryname')
         
 
     # Einfluss BIP/Kopf auf erneuerbare Energien
+    # Funktion mit output df (dataframe) mit BIP/Kopf, Anteil ern. Energien, Jahr -> Länder einfärben
     elif 'btn-2' in changed_id:
-        #Funktion mit output df (dataframe) mit BIP/Kopf, Anteil ern. Energien, Jahr -> Länder einfärben
-        #SQL Query liefert Daten für dataframe
-        local_df = sql_wrangling.get_df_for_button2()
+        local_df = sw.get_df_for_button2()
         fig = px.line_3d(local_df, x='year', y='gdp_per_capita', z='perc_renen', color='countryname')
 
     # Einfluss ern. Energien auf CO2 Emission
+    # Funktion mit output df (dataframe) mit Anteil ern. Energien, CO2 Ausstoß, Jahr -> Länder einfärben
     elif 'btn-3' in changed_id:
-        #Funktion mit output df (dataframe) mit Anteil ern. Energien, CO2 Ausstoß, Jahr -> Länder einfärben
-        #SQL Query liefert Daten für dataframe
-        fig = px.scatter_3d(df, x='CO2', y='CO2', z='CO2', color='CO2')
+        local_df = sw.get_df_for_button3()
+        fig = px.line_3d(local_df, x='year', y='perc_renen', z='annualemissions', color='countryname')
     
     else: fig = fig #bedeutet, nur wenn Button gedrückt wird, verändert sich der Graph
 
     return fig
 
 if __name__ == '__main__':
+
     app.run_server(debug=True)
 
    
