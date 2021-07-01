@@ -1,10 +1,12 @@
 import dash
 import dash_html_components as html
 import dash_core_components as dcc
+from pandas._config.config import options
 import plotly.express as px
-import plotly.graph_objs as go
 from dash.dependencies import Input, Output
 import psycopg2
+
+import sql_wrangling
 
 import pandas as pd
 
@@ -14,20 +16,10 @@ df = pd.read_csv("testing/p.csv")
 #Ausgangsgraph erstellen
 fig = px.scatter_3d(df, x='Year', y='CO2', z='CO2', color='CO2')
 
-def connect(sql_query):
-    conn = psycopg2.connect(
-    host="localhost",
-    database="dbs_project",
-    user="postgres",
-    password="1234")
+sql_df = sql_wrangling.get_df_for_button1()
 
-    cur = conn.cursor()
 
-    cur.execute(sql_query)
-    
-    result = cur
-    cur.close()
-    return result
+dp_options = sql_wrangling.getcountries()
 
 
 # ------------- CREATING SITE ---------------------#
@@ -46,14 +38,7 @@ app.layout = html.Div([
         html.Div([
             html.P("Länder"),
             dcc.Dropdown(
-                id="dd-laender",
-                options=[
-                    #Generieren eines Arrays mit allen Ländern + "World" und evtl. "Europa","Asia","North America","South America","Africa", etc. via SQL-Query
-                    {"label": "World", "value": "world"},
-                    {"label": "Germany", "value": "GER"},
-                    {"label": "France", "value": "FR"},
-                ],
-                value="normal",
+                id="dd-laender", options=dp_options
             )
         ]),
         html.Div([
@@ -141,6 +126,16 @@ app.layout = html.Div([
 
 #wird jedes Mal ausgeführt, falls neuer Input (also Regler verändert wurden) <- muss deshalb NICHT extra aufgerufen werden
 def updateGraph(fig, btn1, btn2, btn3, laender, zeitraum, bip, emission, ernEnergie):
+   
+    #alle Variablen deklarieren
+    country_code = laender
+    
+    
+    zeit_min, zeit_max = zeitraum
+    bip_min, bip_max = bip
+    emission_min, emission_max = emission
+    ernEn_min, ernEn_max = ernEnergie
+
 
     #Check, welcher Parameter als letztes bedient wurde, falls einer der Knöpfe -> Veränderung des Graphens
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
@@ -150,10 +145,10 @@ def updateGraph(fig, btn1, btn2, btn3, laender, zeitraum, bip, emission, ernEner
     if 'btn-1' in changed_id:
         #Funktion mit output df (dataframe) mit BIP, Anteil ern. Energien, Jahr -> Länder einfärben
         #SQL Query liefert Daten für dataframe
-        fig = px.scatter_3d(df, x='Year', y='CO2', z='CO2', color='CO2')
-        result = connect("SELECT * FROM project.commoncountries")
-        for row in result:
-            print(row)
+
+        #fig = px.scatter_3d(df, x='Year', y='CO2', z='CO2', color='CO2')
+        fig = px.scatter_3d(sql_df, x='year', y='gdp', z='perc_renen', color='countryname')
+        
 
     # Einfluss BIP/Kopf auf erneuerbare Energien
     elif 'btn-2' in changed_id:
