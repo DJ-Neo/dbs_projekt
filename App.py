@@ -4,6 +4,7 @@ import dash_core_components as dcc
 import plotly.express as px
 import plotly.graph_objs as go
 from dash.dependencies import Input, Output
+import psycopg2
 
 import pandas as pd
 
@@ -12,6 +13,21 @@ df = pd.read_csv("testing/p.csv")
 
 #Ausgangsgraph erstellen
 fig = px.scatter_3d(df, x='Year', y='CO2', z='CO2', color='CO2')
+
+def connect(sql_query):
+    conn = psycopg2.connect(
+    host="localhost",
+    database="dbs_project",
+    user="postgres",
+    password="1234")
+
+    cur = conn.cursor()
+
+    cur.execute(sql_query)
+    
+    result = cur
+    cur.close()
+    return result
 
 
 # ------------- CREATING SITE ---------------------#
@@ -135,6 +151,9 @@ def updateGraph(fig, btn1, btn2, btn3, laender, zeitraum, bip, emission, ernEner
         #Funktion mit output df (dataframe) mit BIP, Anteil ern. Energien, Jahr -> Länder einfärben
         #SQL Query liefert Daten für dataframe
         fig = px.scatter_3d(df, x='Year', y='CO2', z='CO2', color='CO2')
+        result = connect("SELECT * FROM project.commoncountries")
+        for row in result:
+            print(row)
 
     # Einfluss BIP/Kopf auf erneuerbare Energien
     elif 'btn-2' in changed_id:

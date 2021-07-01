@@ -21,5 +21,5 @@ while index < 264:
         i += 1
         y += 1
     index += 1
-data_new.to_csv("newgdp.csv",index = 0)
+data_new.to_csv("newgdp.csv")
 
