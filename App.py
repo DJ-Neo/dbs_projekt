@@ -1,3 +1,4 @@
+from logging import FATAL
 import dash
 import dash_html_components as html
 import dash_core_components as dcc
@@ -15,7 +16,7 @@ fig = px.line(sw.get_df_for_button1(),
             color='countryname',
             labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder')),
 
-g_type = None
+g_type = None #last_button_pressed
 
 # ------------- CREATING SITE ---------------------#
 
@@ -32,14 +33,33 @@ app.layout = html.Div([
     # Filter Slider + Dropdown
     html.Div([
         html.Div([
-            html.P("BIP"),
+            html.P(children= "Auswahl des Graphens"),
+            dcc.RadioItems(id= "graph-select",
+                options=[
+                    {"label": "Einfluss BIP auf erneuerbare Energien", "value": "gdp"},
+                    {"label": "Einfluss BIP/Kopf auf erneuerbare Energien", "value": "gdp_c"},
+                    {"label": "Auswirkung der Nutzung erneuerbarer Energien auf die CO2-Emission eines Landes", "value": "co2"}
+                ],
+                value="gdp")
+        ]),
+        html.Div([
+            html.P(children = "BIP"),
             dcc.RangeSlider(
                 id='rs-bip',
                 min=0, max=70000, step=0.1,
-                marks={0: '0k.MUSD', 70000: '70,000k.MUSD'},
+                marks={0: '0 USD', 70000: '70.000 * Milliarden USD'},
                 value=[0, 70000]
             )
-        ]),
+        ], id="div-bip-slider", hidden=False),
+        html.Div([
+            html.P(children = "BIP/Kopf"),
+            dcc.RangeSlider(
+                id='rs-bip_c',
+                min=0, max=120000, step=0.1,
+                marks={0: '0 USD', 120000: '120.000 USD'},
+                value=[0, 120000]
+            )
+        ], id="div-bip-pro-kopf-slider", hidden=True),
         html.Div([
             html.P("CO2 Emission"),
             dcc.RangeSlider(
@@ -48,7 +68,7 @@ app.layout = html.Div([
                 marks={0: '0.Mt', 11000: '11,000.Mt'},
                 value=[0, 11000]
             )
-        ]),
+        ], id="div-co2-slider", hidden=True),
         html.Div([
             html.P("Anteil erneuerbarer Energien"),
             dcc.RangeSlider(
@@ -67,7 +87,7 @@ app.layout = html.Div([
     ),
     
     # Eingabe Buttons
-    html.Div([
+    """ html.Div([
         html.P("Einfluss BIP auf erneuerbare Energien"),
         html.Button('BIP / ern. E', id='btn-1'),
         html.P("Einfluss BIP/Kopf auf erneuerbare Energien"),
@@ -80,73 +100,78 @@ app.layout = html.Div([
         "padding": "10px 20px",
         "display": "block"
     },
-    ),
+    ), """
 ])
 
+
+
+
 @app.callback(
-    #Output ist nur der Graph
-    Output("g_type", "data"),
-    
+    Output(component_id="2d-graph", component_property="figure"),
+    Output(component_id="div-bip-slider",component_property="hidden"),
+    Output(component_id="div-bip-pro-kopf-slider",component_property="hidden"),
+    Output(component_id="div-co2-slider",component_property="hidden"),
+
     #Input als Liste, da mehrere
     [
         #Graph dient auch als Input, da falls Knopf nicht gedrückt wird, die Daten des Graphen ("figure") wieder an den Graphen ausgegeben werden
-        #Input("2d-graph", "figure"),
-        Input("btn-1", "n_clicks"),
-        Input("btn-2", "n_clicks"),
-        Input("btn-3", "n_clicks"),]
+        Input("rs-bip", "value"),
+        Input("rs-bip_c", "value"),
+        Input("rs-emission", "value"),
+        Input("rs-ernEnergie", "value"),
+        Input("graph-select", "value")
+        ]
 )
 
-
-#Check, welcher Parameter als letztes bedient wurde, falls einer der Knöpfe -> Veränderung des Graphens
-def graphType(btn_1,btn_2,btn_3):
-    global g_type
-    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-
+#wird jedes Mal ausgeführt, falls neuer Input (also Regler verändert wurden) <- muss deshalb NICHT extra aufgerufen werden
+def updateGraph(bip, bip_c, emission, ernEnergie, graph_select):
+    #Check, welcher Parameter als letztes bedient wurde, falls einer der Knöpfe -> Veränderung des Graphens
+    #global g_type
+    hidden_bip_slider = False
+    hidden_bip_pk_slider = True
+    hidden_co2_slider = True
+    """ changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
     if 'btn-1' in changed_id:
         g_type = 'gdp'
+        
     elif 'btn-2' in changed_id:
         g_type = 'gdp_c'
+        hidden_bip_pk_slider = False
     elif 'btn-3' in changed_id:
-        g_type = 'co2'
-    return
+        g_type = 'co2' """
 
-@app.callback(
-    #Output ist nur der Graph
-    Output("2d-graph", "figure"),
-    #Input als Liste, da mehrere
-    [
-        #Graph dient auch als Input, da falls Knopf nicht gedrückt wird, die Daten des Graphen ("figure") wieder an den Graphen ausgegeben werden
-        #Input("2d-graph", "figure"),
-        Input("rs-bip", "value"),
-        Input("rs-emission", "value"),
-        Input("rs-ernEnergie", "value")]
-)
-#wird jedes Mal ausgeführt, falls neuer Input (also Regler verändert wurden) <- muss deshalb NICHT extra aufgerufen werden
-def updateGraph(bip, emission, ernEnergie):
 
     local_df = sw.mask_df_gdp(sw.get_df_for_button1(), bip, ernEnergie, False)
     fig = px.scatter(local_df, 
                         x = "year", y = "perc_renen", 
                         size="gdp", color="countryname", 
-                        range_x=[local_df["year"].min(), local_df["year"].max()], 
+                        range_x=[1960,2019], 
                         range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
                         labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder'))
     # Einfluss BIP auf erneuerbare Energien
     # Funktion mit output df (dataframe) mit BIP, Anteil ern. Energien, Jahr -> Länder einfärben
-    if g_type == 'gdp':
+    if graph_select == 'gdp':
+        hidden_bip_slider = False
+        hidden_bip_pk_slider = True
+        hidden_co2_slider = True
+
         local_df = sw.mask_df_gdp(sw.get_df_for_button1(), bip, ernEnergie, False)
         fig = px.scatter(local_df, 
                         x = "year", y = "perc_renen", 
                         size="gdp", color="countryname", 
-                        range_x=[local_df["year"].min(), local_df["year"].max()], 
+                        range_x=[1960,2019], 
                         range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
                         labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder'))
 
 
     # Einfluss BIP/Kopf auf erneuerbare Energien
     # Funktion mit output df (dataframe) mit BIP/Kopf, Anteil ern. Energien, Jahr -> Länder einfärben
-    if g_type == 'gdp_c':
-        local_df = sw.mask_df_gdp(sw.get_df_for_button2(), bip, ernEnergie, True)
+    if graph_select == 'gdp_c':
+        hidden_bip_slider = True
+        hidden_bip_pk_slider = False
+        hidden_co2_slider = True
+
+        local_df = sw.mask_df_gdp(sw.get_df_for_button2(), bip_c, ernEnergie, True)
         fig = px.scatter(local_df, 
                         x = "year", y = "perc_renen", 
                         size="gdp_per_capita", color="countryname", 
@@ -156,7 +181,11 @@ def updateGraph(bip, emission, ernEnergie):
 
     # Einfluss ern. Energien auf CO2 Emission
     # Funktion mit output df (dataframe) mit Anteil ern. Energien, CO2 Ausstoß, Jahr -> Länder einfärben
-    if g_type == 'co2':
+    if graph_select == 'co2':
+        hidden_bip_slider = True
+        hidden_bip_pk_slider = True
+        hidden_co2_slider = False
+
         local_df = sw.mask_df_emi(sw.get_df_for_button3(), emission, ernEnergie)
         fig = px.scatter(local_df, 
                         x = "year", y = "perc_renen", 
@@ -165,8 +194,8 @@ def updateGraph(bip, emission, ernEnergie):
                         range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
                         labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder'))
 
-    return fig
+    return fig, hidden_bip_slider, hidden_bip_pk_slider, hidden_co2_slider     #  Wenn True -> bip-slider = NOT hidden, bip-pro-kopf-slider = hidden
 
 if __name__ == '__main__':
-
+    updateGraph
     app.run_server(debug=True)
