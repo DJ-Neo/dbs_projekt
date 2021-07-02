@@ -1,16 +1,11 @@
-from logging import FATAL
 import dash
 import dash_html_components as html
 import dash_core_components as dcc
-from pandas._config.config import options
 import plotly.express as px
-import plotly.graph_objects as go
 from dash.dependencies import Input, Output
 
-import pandas as pd
+#eigene Python Datei
 import sql_wrangling as sw
-
-#Ausgangsgraph erstellen
 
 # ------------- CREATING SITE ---------------------#
 
@@ -22,7 +17,7 @@ app.layout = html.Div([
     # Graph
     dcc.Graph(id="2d-graph"),
     
-    # Filter Slider + Dropdown
+    # Range Slider
     html.Div([
         html.Div([
             html.H2(children= "Auswahl des Graphens"),
@@ -47,7 +42,7 @@ app.layout = html.Div([
             html.H2(children = "BIP/Kopf"),
             dcc.RangeSlider(
                 id='rs-bip_c',
-                min=0, max=1200, step=0.1,
+                min=0, max=1200, step=1,
                 marks={0: '0 USD', 1200: '120.000 USD'},
                 value=[0, 1200]
             )
@@ -56,24 +51,22 @@ app.layout = html.Div([
             html.H2("CO2 Emission"),
             dcc.RangeSlider(
                 id='rs-emission',
-                min=0, max=11000, step=1,
-                marks={0: '0.Mt', 11000: '11,000.Mt'},
-                value=[0, 11000]
+                min=0, max=10000, step=1,
+                marks={0: '0t', 10000: '10.000.000t'},
+                value=[0, 10000]
             )
         ], id="div-co2-slider", hidden=True),
         html.Div([
             html.H2("Anteil erneuerbarer Energien"),
             dcc.RangeSlider(
                 id='rs-ernEnergie',
-                min=0, max=150, step=0.1,
+                min=0, max=150, step=1,
                 marks={0: '0%', 150: '150%'},
                 value=[0, 150]
             )
         ])
-    ]
-    ),
+    ])
 ])
-
 
 @app.callback(
     Output(component_id="2d-graph", component_property="figure"),
