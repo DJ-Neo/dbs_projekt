@@ -13,8 +13,9 @@ import sql_wrangling as sw
 fig = px.line(sw.get_df_for_button1(), 
             x = 'year', y="perc_renen",
             color='countryname',
-            labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder'))
+            labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder')),
 
+g_type = None
 
 # ------------- CREATING SITE ---------------------#
 
@@ -26,7 +27,7 @@ app.layout = html.Div([
 
 
     # Graph
-    dcc.Graph(id="2d-graph",figure=fig),
+    dcc.Graph(id="2d-graph"),
     
     # Filter Slider + Dropdown
     html.Div([
@@ -84,35 +85,55 @@ app.layout = html.Div([
 
 @app.callback(
     #Output ist nur der Graph
-    Output("2d-graph", "figure"),
+    Output("g_type", "data"),
     
     #Input als Liste, da mehrere
     [
         #Graph dient auch als Input, da falls Knopf nicht gedrückt wird, die Daten des Graphen ("figure") wieder an den Graphen ausgegeben werden
         #Input("2d-graph", "figure"),
-
         Input("btn-1", "n_clicks"),
         Input("btn-2", "n_clicks"),
-        Input("btn-3", "n_clicks"),
-
-        Input("rs-bip", "value"),
-        Input("rs-emission", "value"),
-        Input("rs-ernEnergie", "value")],
+        Input("btn-3", "n_clicks"),]
 )
 
-#wird jedes Mal ausgeführt, falls neuer Input (also Regler verändert wurden) <- muss deshalb NICHT extra aufgerufen werden
-def updateGraph(btn1, btn2, btn3, bip, emission, ernEnergie):
 
-    #alle Variablen deklarieren
-    
-
-    #Check, welcher Parameter als letztes bedient wurde, falls einer der Knöpfe -> Veränderung des Graphens
+#Check, welcher Parameter als letztes bedient wurde, falls einer der Knöpfe -> Veränderung des Graphens
+def graphType(btn_1,btn_2,btn_3):
+    global g_type
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-    
 
+    if 'btn-1' in changed_id:
+        g_type = 'gdp'
+    elif 'btn-2' in changed_id:
+        g_type = 'gdp_c'
+    elif 'btn-3' in changed_id:
+        g_type = 'co2'
+    return
+
+@app.callback(
+    #Output ist nur der Graph
+    Output("2d-graph", "figure"),
+    #Input als Liste, da mehrere
+    [
+        #Graph dient auch als Input, da falls Knopf nicht gedrückt wird, die Daten des Graphen ("figure") wieder an den Graphen ausgegeben werden
+        #Input("2d-graph", "figure"),
+        Input("rs-bip", "value"),
+        Input("rs-emission", "value"),
+        Input("rs-ernEnergie", "value")]
+)
+#wird jedes Mal ausgeführt, falls neuer Input (also Regler verändert wurden) <- muss deshalb NICHT extra aufgerufen werden
+def updateGraph(bip, emission, ernEnergie):
+
+    local_df = sw.mask_df_gdp(sw.get_df_for_button1(), bip, ernEnergie, False)
+    fig = px.scatter(local_df, 
+                        x = "year", y = "perc_renen", 
+                        size="gdp", color="countryname", 
+                        range_x=[local_df["year"].min(), local_df["year"].max()], 
+                        range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
+                        labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder'))
     # Einfluss BIP auf erneuerbare Energien
     # Funktion mit output df (dataframe) mit BIP, Anteil ern. Energien, Jahr -> Länder einfärben
-    if 'btn-1' in changed_id:
+    if g_type == 'gdp':
         local_df = sw.mask_df_gdp(sw.get_df_for_button1(), bip, ernEnergie, False)
         fig = px.scatter(local_df, 
                         x = "year", y = "perc_renen", 
@@ -124,7 +145,7 @@ def updateGraph(btn1, btn2, btn3, bip, emission, ernEnergie):
 
     # Einfluss BIP/Kopf auf erneuerbare Energien
     # Funktion mit output df (dataframe) mit BIP/Kopf, Anteil ern. Energien, Jahr -> Länder einfärben
-    if 'btn-2' in changed_id:
+    if g_type == 'gdp_c':
         local_df = sw.mask_df_gdp(sw.get_df_for_button2(), bip, ernEnergie, True)
         fig = px.scatter(local_df, 
                         x = "year", y = "perc_renen", 
@@ -135,7 +156,7 @@ def updateGraph(btn1, btn2, btn3, bip, emission, ernEnergie):
 
     # Einfluss ern. Energien auf CO2 Emission
     # Funktion mit output df (dataframe) mit Anteil ern. Energien, CO2 Ausstoß, Jahr -> Länder einfärben
-    elif 'btn-3' in changed_id:
+    if g_type == 'co2':
         local_df = sw.mask_df_emi(sw.get_df_for_button3(), emission, ernEnergie)
         fig = px.scatter(local_df, 
                         x = "year", y = "perc_renen", 
@@ -143,7 +164,6 @@ def updateGraph(btn1, btn2, btn3, bip, emission, ernEnergie):
                         range_x=[local_df["year"].min(), local_df["year"].max()], 
                         range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
                         labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder'))
-
 
     return fig
 
