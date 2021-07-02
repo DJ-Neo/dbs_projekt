@@ -45,7 +45,7 @@ def mask_df_gdp(df, bip, ernEnergie, per_capita):
 
     if per_capita:
         factor_for_bip = 100
-    else: factor_for_bip = 1000000000
+    else: factor_for_bip = 1e9
     
     if per_capita:
         filter_by_bip = (df["gdp_per_capita"] >= bip_min) & (df["gdp_per_capita"] < bip_max*factor_for_bip)  
