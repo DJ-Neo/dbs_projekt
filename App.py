@@ -4,6 +4,7 @@ import dash_html_components as html
 import dash_core_components as dcc
 from pandas._config.config import options
 import plotly.express as px
+import plotly.graph_objects as go
 from dash.dependencies import Input, Output
 
 import pandas as pd
@@ -41,9 +42,9 @@ app.layout = html.Div([
             html.H2(children = "BIP"),
             dcc.RangeSlider(
                 id='rs-bip',
-                min=0, max=70000, step=0.1,
-                marks={0: '0 USD', 70000: '70.000 * Milliarden USD'},
-                value=[0, 70000]
+                min=0, max=22000, step=0.1,
+                marks={0: '0 USD', 22000: '22.000 * Milliarden USD'},
+                value=[0, 22000]
             )
         ], id="div-bip-slider", hidden=False),
         html.Div([
@@ -77,11 +78,6 @@ app.layout = html.Div([
     ),
 ])
 
-""" , style={
-        "backgroundColor": "#DDDDDD",
-        "marginTop": "10px",
-        "padding": "10px 20px",
-    }, """
 
 
 
