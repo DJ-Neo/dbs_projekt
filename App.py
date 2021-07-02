@@ -47,9 +47,9 @@ app.layout = html.Div([
             html.P("CO2 Emission"),
             dcc.RangeSlider(
                 id='rs-emission',
-                min=0.1, max=10000, step=1,
-                marks={0.1: '100.000t', 1000: '1.000.000.000t'},
-                value=[0.1, 1000]
+                min=10, max=20000, step=10,
+                marks={10: '1.000.000t', 20000: '2.000.000.000t'},
+                value=[0, 20000]
             )
         ]),
         html.Div([
@@ -126,7 +126,7 @@ def updateGraph(btn1, btn2, btn3, bip, emission, ernEnergie):
     # Funktion mit output df (dataframe) mit BIP/Kopf, Anteil ern. Energien, Jahr -> Länder einfärben
     if 'btn-2' in changed_id:
         local_df = sw.mask_df_gdp(sw.get_df_for_button2(), bip, ernEnergie, True)
-        fig = px.scatter(local_df, x = "year", y = "perc_renen", size="gdp_per_capita", color="countryname", range_x=[local_df["year"].min(), local_df["year"].max()], range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()])
+        fig = px.scatter(local_df, x = "year", y = "perc_renen", size="gdp_per_capita", color="countryname", range_x=[local_df["year"].min(), local_df["year"].max()], range_y=[local_df["perc_renen"].min() + 1,local_df["perc_renen"].max()], log_y=True)
 
     # Einfluss ern. Energien auf CO2 Emission
     # Funktion mit output df (dataframe) mit Anteil ern. Energien, CO2 Ausstoß, Jahr -> Länder einfärben
@@ -136,7 +136,7 @@ def updateGraph(btn1, btn2, btn3, bip, emission, ernEnergie):
     
     else:
         local_df = sw.mask_df_gdp(sw.get_df_for_button1(), bip, ernEnergie, False)
-        fig = px.scatter(local_df, x = "year", y = "perc_renen", size="gdp", color="countryname", range_x=[local_df["year"].min(), local_df["year"].max()], range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()])
+        fig = px.scatter(local_df, x = "year", y = "perc_renen", size="gdp", color="countryname", range_x=[local_df["year"].min(), local_df["year"].max()], range_y=[local_df["perc_renen"].min() +1,local_df["perc_renen"].max()],log_y=True)
 
     return fig
 
