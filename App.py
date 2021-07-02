@@ -120,8 +120,13 @@ def updateGraph(btn1, btn2, btn3, bip, emission, ernEnergie):
     # Einfluss BIP auf erneuerbare Energien
     # Funktion mit output df (dataframe) mit BIP, Anteil ern. Energien, Jahr -> Länder einfärben
     if 'btn-1' in changed_id:
-        """ local_df = sw.mask_df_gdp(sw.get_df_for_button1(), bip, ernEnergie, False)
-        fig = px.scatter(local_df, x = "year", y = "perc_renen", size="gdp", color="countryname", range_x=[local_df["year"].min(), local_df["year"].max()], range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()]) """
+        local_df = sw.mask_df_gdp(sw.get_df_for_button1(), bip, ernEnergie, False)
+        fig = px.scatter(local_df, 
+                         x = "year", y = "perc_renen", 
+                         size="gdp", color="countryname", 
+                         range_x=[local_df["year"].min(), local_df["year"].max()], 
+                         range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
+                         labels=dict(perc_renen = 'Anteil erneuerbarer Energien'))
 
 
     # Einfluss BIP/Kopf auf erneuerbare Energien
