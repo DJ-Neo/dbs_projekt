@@ -34,12 +34,12 @@ app.layout = html.Div([
     # Filter Slider + Dropdown
     html.Div([
         html.Div([
-            html.P("BIP (* 1.000.000.000)"),
+            html.P("BIP"),
             dcc.RangeSlider(
                 id='rs-bip',
-                min=0, max=40000, step=0.1,
-                marks={0: '0$', 40000: '40.000$'},
-                value=[0, 40000]
+                min=0, max=70000, step=0.1,
+                marks={0: '0k.MUSD', 70000: '70,000k.MUSD'},
+                value=[0, 70000]
             )
         ]),
         html.Div([
