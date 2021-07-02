@@ -11,10 +11,6 @@ import pandas as pd
 import sql_wrangling as sw
 
 #Ausgangsgraph erstellen
-fig = px.line(sw.get_df_for_button1(), 
-            x = 'year', y="perc_renen",
-            color='countryname',
-            labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder')),
 
 # ------------- CREATING SITE ---------------------#
 
@@ -51,9 +47,9 @@ app.layout = html.Div([
             html.H2(children = "BIP/Kopf"),
             dcc.RangeSlider(
                 id='rs-bip_c',
-                min=0, max=120000, step=0.1,
-                marks={0: '0 USD', 120000: '120.000 USD'},
-                value=[0, 120000]
+                min=0, max=1200, step=0.1,
+                marks={0: '0 USD', 1200: '120.000 USD'},
+                value=[0, 1200]
             )
         ], id="div-bip-pro-kopf-slider", hidden=True),
         html.Div([
@@ -77,8 +73,6 @@ app.layout = html.Div([
     ]
     ),
 ])
-
-
 
 
 @app.callback(
@@ -112,14 +106,16 @@ def updateGraph(bip, bip_c, emission, ernEnergie, graph_select):
         hidden_bip_slider = False
         hidden_bip_pk_slider = True
         hidden_co2_slider = True
-
-        local_df = sw.mask_df_gdp(sw.get_df_for_button1(), bip, ernEnergie, False)
+        
+        init_df = sw.get_df_for_button1()
+        local_df = sw.mask_df_gdp(init_df, bip, ernEnergie, False)
         fig = px.scatter(local_df, 
                         x = "year", y = "perc_renen", 
                         size="gdp", color="countryname", 
-                        range_x=[1960,2019], 
+                        range_x=[init_df["year"].min(),init_df["year"].max()], 
                         range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
-                        labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder'))
+                        labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder')
+                        )
 
 
     # Einfluss BIP/Kopf auf erneuerbare Energien
@@ -131,13 +127,15 @@ def updateGraph(bip, bip_c, emission, ernEnergie, graph_select):
         hidden_bip_pk_slider = False
         hidden_co2_slider = True
 
-        local_df = sw.mask_df_gdp(sw.get_df_for_button2(), bip_c, ernEnergie, True)
+        init_df = sw.get_df_for_button2()
+        local_df = sw.mask_df_gdp(init_df, bip_c, ernEnergie, True)
         fig = px.scatter(local_df, 
                         x = "year", y = "perc_renen", 
                         size="gdp_per_capita", color="countryname", 
-                        range_x=[1960, 2019], 
+                        range_x=[init_df["year"].min(),init_df["year"].max()], 
                         range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
-                        labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder'))
+                        labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder')
+                        )
 
     # Einfluss ern. Energien auf CO2 Emission
     # Funktion mit output df (dataframe) mit Anteil ern. Energien, CO2 Ausstoß, Jahr -> Länder einfärben
@@ -147,14 +145,16 @@ def updateGraph(bip, bip_c, emission, ernEnergie, graph_select):
         hidden_bip_slider = True
         hidden_bip_pk_slider = True
         hidden_co2_slider = False
-
-        local_df = sw.mask_df_emi(sw.get_df_for_button3(), emission, ernEnergie)
+        
+        init_df = sw.get_df_for_button3()
+        local_df = sw.mask_df_emi(init_df, emission, ernEnergie)
         fig = px.scatter(local_df, 
                         x = "year", y = "perc_renen", 
                         size="annualemissions", color="countryname", 
-                        range_x=[1960, 2019], 
+                        range_x=[init_df["year"].min(),init_df["year"].max()], 
                         range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
-                        labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder'))
+                        labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder')
+                        )
 
     return fig, hidden_bip_slider, hidden_bip_pk_slider, hidden_co2_slider     #  Wenn True -> bip-slider = NOT hidden, bip-pro-kopf-slider = hidden
 

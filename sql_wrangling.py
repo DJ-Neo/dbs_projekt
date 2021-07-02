@@ -52,7 +52,7 @@ def mask_df_gdp(df, bip, ernEnergie, per_capita):
     else: filter_by_bip = (df["gdp"] >= bip_min*factor_for_bip) & (df["gdp"] < bip_max*factor_for_bip) 
     filter_by_ernEn = (df["perc_renen"] >= ernEn_min) & (df["perc_renen"] < ernEn_max)
     
-    rslt_df = df[filter_by_ernEn & filter_by_bip] #filter_by_year &
+    rslt_df = df[filter_by_ernEn & filter_by_bip] 
     
     return rslt_df
 
@@ -66,6 +66,6 @@ def mask_df_emi(df, emission, ernEnergie):
     filter_by_emission = (df["annualemissions"] >= emission_min*factor_for_emi) & (df["annualemissions"] < emission_max*factor_for_emi)
     filter_by_ernEn = (df["perc_renen"] >= ernEn_min) & (df["perc_renen"] < ernEn_max)
     
-    rslt_df = df[filter_by_emission & filter_by_ernEn] #filter_by_year & 
+    rslt_df = df[filter_by_emission & filter_by_ernEn]
     
     return rslt_df
