@@ -47,7 +47,7 @@ app.layout = html.Div([
             dcc.RangeSlider(
                 id='rs-emission',
                 min=0, max=11000, step=1,
-                marks={0: '10.Mt', 11000: '11.000.Mt'},
+                marks={0: '0.Mt', 11000: '11,000.Mt'},
                 value=[0, 11000]
             )
         ]),
