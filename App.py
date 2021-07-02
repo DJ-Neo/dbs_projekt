@@ -18,7 +18,7 @@ init_df = sw.get_df_for_init
 fig = px.line(sw.get_df_for_button1(), 
             x = 'year', y="perc_renen",
             color='countryname',
-            labels=dict(perc_renen = 'Anteil erneuerbarer Energien'))
+            labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder'))
 #dp_options = sw.getcountries() obsolet
 
 
@@ -122,11 +122,11 @@ def updateGraph(btn1, btn2, btn3, bip, emission, ernEnergie):
     if 'btn-1' in changed_id:
         local_df = sw.mask_df_gdp(sw.get_df_for_button1(), bip, ernEnergie, False)
         fig = px.scatter(local_df, 
-                         x = "year", y = "perc_renen", 
-                         size="gdp", color="countryname", 
-                         range_x=[local_df["year"].min(), local_df["year"].max()], 
-                         range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
-                         labels=dict(perc_renen = 'Anteil erneuerbarer Energien'))
+                        x = "year", y = "perc_renen", 
+                        size="gdp", color="countryname", 
+                        range_x=[local_df["year"].min(), local_df["year"].max()], 
+                        range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
+                        labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder'))
 
 
     # Einfluss BIP/Kopf auf erneuerbare Energien
@@ -134,40 +134,38 @@ def updateGraph(btn1, btn2, btn3, bip, emission, ernEnergie):
     if 'btn-2' in changed_id:
         local_df = sw.mask_df_gdp(sw.get_df_for_button2(), bip, ernEnergie, True)
         fig = px.scatter(local_df, 
-                         x = "year", y = "perc_renen", 
-                         size="gdp_per_capita", color="countryname", 
-                         range_x=[local_df["year"].min(), local_df["year"].max()], 
-                         range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
-                         labels=dict(perc_renen = 'Anteil erneuerbarer Energien'))
+                        x = "year", y = "perc_renen", 
+                        size="gdp_per_capita", color="countryname", 
+                        range_x=[local_df["year"].min(), local_df["year"].max()], 
+                        range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
+                        labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder'))
 
     # Einfluss ern. Energien auf CO2 Emission
     # Funktion mit output df (dataframe) mit Anteil ern. Energien, CO2 Ausstoß, Jahr -> Länder einfärben
     elif 'btn-3' in changed_id:
         local_df = sw.mask_df_emi(sw.get_df_for_button3(), emission, ernEnergie)
         fig = px.scatter(local_df, 
-                         x = "year", y = "perc_renen", 
-                         size="annualemissions", color="countryname", 
-                         range_x=[local_df["year"].min(), local_df["year"].max()], 
-                         range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
-                         labels=dict(perc_renen = 'Anteil erneuerbarer Energien'))
+                        x = "year", y = "perc_renen", 
+                        size="annualemissions", color="countryname", 
+                        range_x=[local_df["year"].min(), local_df["year"].max()], 
+                        range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
+                        labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder'))
     
     else:
         local_df = sw.mask_df_gdp(sw.get_df_for_button1(), bip, ernEnergie, False)
         fig = px.scatter(local_df, 
-                         x = "year", y = "perc_renen", 
-                         size="gdp", color="countryname", 
-                         range_x=[local_df["year"].min(), local_df["year"].max()], 
-                         range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
-                         labels=dict(perc_renen = 'Anteil erneuerbarer Energien'))
+                        x = "year", y = "perc_renen", 
+                        size="gdp", color="countryname", 
+                        range_x=[local_df["year"].min(), local_df["year"].max()], 
+                        range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
+                        labels=dict(perc_renen = 'Anteil erneuerbarer Energien'))
 
     return fig
 
 if __name__ == '__main__':
 
-
     app.run_server(debug=True)
 
-   
 
 """         html.Div([ #obsolet
             html.P("Länder"),
