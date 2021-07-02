@@ -15,7 +15,10 @@ import sql_wrangling as sw
 init_df = sw.get_df_for_init
 #init_fig = px.line_3d(init_df, x='year', y='gdp', z='perc_renen', color='countryname')
 #init_fig = px.scatter(init_df, x = "gdp", y = "perc_renen", color="countryname") #, log_x=True, range_x=[100, 30000], range_y=[0,30]
-
+fig = px.line(sw.get_df_for_button1(), 
+            x = 'year', y="perc_renen",
+            color='countryname',
+            labels=dict(perc_renen = 'Anteil erneuerbarer Energien'))
 #dp_options = sw.getcountries() obsolet
 
 
@@ -29,7 +32,7 @@ app.layout = html.Div([
 
 
     # Graph
-    dcc.Graph(id="2d-graph"),
+    dcc.Graph(id="2d-graph",figure=fig),
     
     # Filter Slider + Dropdown
     html.Div([
@@ -125,17 +128,32 @@ def updateGraph(btn1, btn2, btn3, bip, emission, ernEnergie):
     # Funktion mit output df (dataframe) mit BIP/Kopf, Anteil ern. Energien, Jahr -> Länder einfärben
     if 'btn-2' in changed_id:
         local_df = sw.mask_df_gdp(sw.get_df_for_button2(), bip, ernEnergie, True)
-        fig = px.scatter(local_df, x = "year", y = "perc_renen", size="gdp_per_capita", color="countryname", range_x=[local_df["year"].min(), local_df["year"].max()], range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()])
+        fig = px.scatter(local_df, 
+                         x = "year", y = "perc_renen", 
+                         size="gdp_per_capita", color="countryname", 
+                         range_x=[local_df["year"].min(), local_df["year"].max()], 
+                         range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
+                         labels=dict(perc_renen = 'Anteil erneuerbarer Energien'))
 
     # Einfluss ern. Energien auf CO2 Emission
     # Funktion mit output df (dataframe) mit Anteil ern. Energien, CO2 Ausstoß, Jahr -> Länder einfärben
     elif 'btn-3' in changed_id:
         local_df = sw.mask_df_emi(sw.get_df_for_button3(), emission, ernEnergie)
-        fig = px.scatter(local_df, x = "year", y = "perc_renen", size="annualemissions", color="countryname", range_x=[local_df["year"].min(), local_df["year"].max()], range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()])
+        fig = px.scatter(local_df, 
+                         x = "year", y = "perc_renen", 
+                         size="annualemissions", color="countryname", 
+                         range_x=[local_df["year"].min(), local_df["year"].max()], 
+                         range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
+                         labels=dict(perc_renen = 'Anteil erneuerbarer Energien'))
     
     else:
         local_df = sw.mask_df_gdp(sw.get_df_for_button1(), bip, ernEnergie, False)
-        fig = px.scatter(local_df, x = "year", y = "perc_renen", size="gdp", color="countryname", range_x=[local_df["year"].min(), local_df["year"].max()], range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()])
+        fig = px.scatter(local_df, 
+                         x = "year", y = "perc_renen", 
+                         size="gdp", color="countryname", 
+                         range_x=[local_df["year"].min(), local_df["year"].max()], 
+                         range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
+                         labels=dict(perc_renen = 'Anteil erneuerbarer Energien'))
 
     return fig
 
