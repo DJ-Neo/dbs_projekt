@@ -131,7 +131,7 @@ def updateGraph(btn1, btn2, btn3, bip, emission, ernEnergie):
     # Funktion mit output df (dataframe) mit Anteil ern. Energien, CO2 Ausstoß, Jahr -> Länder einfärben
     elif 'btn-3' in changed_id:
         local_df = sw.mask_df_emi(sw.get_df_for_button3(), emission, ernEnergie)
-        fig = px.scatter(local_df, x = "year", y = "annualemissions", size="perc_renen", color="countryname", range_x=[local_df["year"].min(), local_df["year"].max()], range_y=[local_df["annualemissions"].min()+1,local_df["annualemissions"].max()], log_y=True)
+        fig = px.scatter(local_df, x = "year", y = "perc_renen", size="annualemissions", color="countryname", range_x=[local_df["year"].min(), local_df["year"].max()], range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()])
     
     else:
         local_df = sw.mask_df_gdp(sw.get_df_for_button1(), bip, ernEnergie, False)
