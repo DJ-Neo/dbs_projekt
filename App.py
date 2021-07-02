@@ -9,7 +9,6 @@ import pandas as pd
 import sql_wrangling as sw
 
 
-
 #Ausgangsgraph erstellen
 
 
@@ -47,9 +46,9 @@ app.layout = html.Div([
             html.P("CO2 Emission"),
             dcc.RangeSlider(
                 id='rs-emission',
-                min=0.1, max=10000, step=1,
-                marks={0.1: '100.000t', 1000: '1.000.000.000t'},
-                value=[0.1, 1000]
+                min=1, max=1100, step=1,
+                marks={1: '10.Mt', 1100: '11.000.Mt'},
+                value=[1, 1100]
             )
         ]),
         html.Div([
