@@ -9,14 +9,11 @@ from dash.dependencies import Input, Output
 import pandas as pd
 import sql_wrangling as sw
 
-
 #Ausgangsgraph erstellen
 fig = px.line(sw.get_df_for_button1(), 
             x = 'year', y="perc_renen",
             color='countryname',
             labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder')),
-
-g_type = None #last_button_pressed
 
 # ------------- CREATING SITE ---------------------#
 
@@ -25,15 +22,13 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.layout = html.Div([
     html.H1("DBS Projekt"),
-
-
     # Graph
     dcc.Graph(id="2d-graph"),
     
     # Filter Slider + Dropdown
     html.Div([
         html.Div([
-            html.P(children= "Auswahl des Graphens"),
+            html.H2(children= "Auswahl des Graphens"),
             dcc.RadioItems(id= "graph-select",
                 options=[
                     {"label": "Einfluss BIP auf erneuerbare Energien", "value": "gdp"},
@@ -43,7 +38,7 @@ app.layout = html.Div([
                 value="gdp")
         ]),
         html.Div([
-            html.P(children = "BIP"),
+            html.H2(children = "BIP"),
             dcc.RangeSlider(
                 id='rs-bip',
                 min=0, max=70000, step=0.1,
@@ -52,7 +47,7 @@ app.layout = html.Div([
             )
         ], id="div-bip-slider", hidden=False),
         html.Div([
-            html.P(children = "BIP/Kopf"),
+            html.H2(children = "BIP/Kopf"),
             dcc.RangeSlider(
                 id='rs-bip_c',
                 min=0, max=120000, step=0.1,
@@ -61,7 +56,7 @@ app.layout = html.Div([
             )
         ], id="div-bip-pro-kopf-slider", hidden=True),
         html.Div([
-            html.P("CO2 Emission"),
+            html.H2("CO2 Emission"),
             dcc.RangeSlider(
                 id='rs-emission',
                 min=0, max=11000, step=1,
@@ -70,7 +65,7 @@ app.layout = html.Div([
             )
         ], id="div-co2-slider", hidden=True),
         html.Div([
-            html.P("Anteil erneuerbarer Energien"),
+            html.H2("Anteil erneuerbarer Energien"),
             dcc.RangeSlider(
                 id='rs-ernEnergie',
                 min=0, max=150, step=0.1,
@@ -78,31 +73,15 @@ app.layout = html.Div([
                 value=[0, 150]
             )
         ])
-    ],
-        style={
+    ]
+    ),
+])
+
+""" , style={
         "backgroundColor": "#DDDDDD",
         "marginTop": "10px",
         "padding": "10px 20px",
-    },
-    ),
-    
-    # Eingabe Buttons
-    """ html.Div([
-        html.P("Einfluss BIP auf erneuerbare Energien"),
-        html.Button('BIP / ern. E', id='btn-1'),
-        html.P("Einfluss BIP/Kopf auf erneuerbare Energien"),
-        html.Button('(BIP/Cap) / ern. E', id='btn-2'),
-        html.P("Auswirkung der Nutzung erneuerbarer Energien auf die CO2-Emission eines Landes"),
-        html.Button('ern. E / CO2', id='btn-3'),
-    ],
-        style={
-        "backgroundColor": "#DDDDDD",
-        "padding": "10px 20px",
-        "display": "block"
-    },
-    ), """
-])
-
+    }, """
 
 
 
@@ -130,24 +109,7 @@ def updateGraph(bip, bip_c, emission, ernEnergie, graph_select):
     hidden_bip_slider = False
     hidden_bip_pk_slider = True
     hidden_co2_slider = True
-    """ changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-    if 'btn-1' in changed_id:
-        g_type = 'gdp'
-        
-    elif 'btn-2' in changed_id:
-        g_type = 'gdp_c'
-        hidden_bip_pk_slider = False
-    elif 'btn-3' in changed_id:
-        g_type = 'co2' """
 
-
-    local_df = sw.mask_df_gdp(sw.get_df_for_button1(), bip, ernEnergie, False)
-    fig = px.scatter(local_df, 
-                        x = "year", y = "perc_renen", 
-                        size="gdp", color="countryname", 
-                        range_x=[1960,2019], 
-                        range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
-                        labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder'))
     # Einfluss BIP auf erneuerbare Energien
     # Funktion mit output df (dataframe) mit BIP, Anteil ern. Energien, Jahr -> Länder einfärben
     if graph_select == 'gdp':
@@ -166,7 +128,9 @@ def updateGraph(bip, bip_c, emission, ernEnergie, graph_select):
 
     # Einfluss BIP/Kopf auf erneuerbare Energien
     # Funktion mit output df (dataframe) mit BIP/Kopf, Anteil ern. Energien, Jahr -> Länder einfärben
-    if graph_select == 'gdp_c':
+    
+    #if graph_select == 'gdp_c':
+    elif graph_select == 'gdp_c':
         hidden_bip_slider = True
         hidden_bip_pk_slider = False
         hidden_co2_slider = True
@@ -175,13 +139,15 @@ def updateGraph(bip, bip_c, emission, ernEnergie, graph_select):
         fig = px.scatter(local_df, 
                         x = "year", y = "perc_renen", 
                         size="gdp_per_capita", color="countryname", 
-                        range_x=[local_df["year"].min(), local_df["year"].max()], 
+                        range_x=[1960, 2019], 
                         range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
                         labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder'))
 
     # Einfluss ern. Energien auf CO2 Emission
     # Funktion mit output df (dataframe) mit Anteil ern. Energien, CO2 Ausstoß, Jahr -> Länder einfärben
-    if graph_select == 'co2':
+    
+    #if graph_select == 'co2':
+    else:
         hidden_bip_slider = True
         hidden_bip_pk_slider = True
         hidden_co2_slider = False
@@ -190,7 +156,7 @@ def updateGraph(bip, bip_c, emission, ernEnergie, graph_select):
         fig = px.scatter(local_df, 
                         x = "year", y = "perc_renen", 
                         size="annualemissions", color="countryname", 
-                        range_x=[local_df["year"].min(), local_df["year"].max()], 
+                        range_x=[1960, 2019], 
                         range_y=[local_df["perc_renen"].min(),local_df["perc_renen"].max()],
                         labels=dict(perc_renen = 'Anteil erneuerbarer Energien', year = 'Jahr', countryname = 'Länder'))
 
