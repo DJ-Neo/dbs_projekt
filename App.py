@@ -16,6 +16,13 @@ app.layout = html.Div([
     html.H1("DBS Projekt"),
     # Graph
     dcc.Graph(id="2d-graph"),
+
+    html.Label('Länder auswählen'),
+    dcc.Dropdown(id = 'country-selec',
+        options = sw.getcountries(),
+        value = ['WRD'],
+        multi=True
+    ),
     
     # Range Slider
     html.Div([
@@ -38,6 +45,7 @@ app.layout = html.Div([
                 value=[0, 22000]
             )
         ], id="div-bip-slider", hidden=False),
+
         html.Div([
             html.H2(children = "BIP/Kopf"),
             dcc.RangeSlider(
@@ -81,17 +89,23 @@ app.layout = html.Div([
         Input("rs-bip_c", "value"),
         Input("rs-emission", "value"),
         Input("rs-ernEnergie", "value"),
-        Input("graph-select", "value")
+        Input("graph-select", "value"),
+        Input("country-selec", "value")
         ]
 )
 
 #wird jedes Mal ausgeführt, falls neuer Input (also Regler verändert wurden) <- muss deshalb NICHT extra aufgerufen werden
-def updateGraph(bip, bip_c, emission, ernEnergie, graph_select):
+def updateGraph(bip, bip_c, emission, ernEnergie, graph_select,country_selec):
     #Check, welcher Parameter als letztes bedient wurde, falls einer der Knöpfe -> Veränderung des Graphens
     #global g_type
+
+    
     hidden_bip_slider = False
     hidden_bip_pk_slider = True
     hidden_co2_slider = True
+
+    if country_selec == ['WRD']:
+        country_selec = sw.g_all()
 
     # Einfluss BIP auf erneuerbare Energien
     # Funktion mit output df (dataframe) mit BIP, Anteil ern. Energien, Jahr -> Länder einfärben
@@ -101,7 +115,10 @@ def updateGraph(bip, bip_c, emission, ernEnergie, graph_select):
         hidden_co2_slider = True
         
         init_df = sw.get_df_for_button1()
-        local_df = sw.mask_df_gdp(init_df, bip, ernEnergie, False)
+        local_df = sw.mask_df_gdp(init_df, bip, ernEnergie,False)
+
+        local_df = sw.country_filter(country_selec, local_df)
+        
         fig = px.scatter(local_df, 
                         x = "year", y = "perc_renen", 
                         size="gdp", color="countryname", 
@@ -122,6 +139,8 @@ def updateGraph(bip, bip_c, emission, ernEnergie, graph_select):
 
         init_df = sw.get_df_for_button2()
         local_df = sw.mask_df_gdp(init_df, bip_c, ernEnergie, True)
+        local_df = sw.country_filter(country_selec, local_df)
+        
         fig = px.scatter(local_df, 
                         x = "year", y = "perc_renen", 
                         size="gdp_per_capita", color="countryname", 
@@ -141,6 +160,8 @@ def updateGraph(bip, bip_c, emission, ernEnergie, graph_select):
         
         init_df = sw.get_df_for_button3()
         local_df = sw.mask_df_emi(init_df, emission, ernEnergie)
+        local_df = sw.country_filter(country_selec, local_df)
+
         fig = px.scatter(local_df, 
                         x = "year", y = "perc_renen", 
                         size="annualemissions", color="countryname", 
@@ -150,6 +171,8 @@ def updateGraph(bip, bip_c, emission, ernEnergie, graph_select):
                         )
 
     return fig, hidden_bip_slider, hidden_bip_pk_slider, hidden_co2_slider     #  Wenn True -> bip-slider = NOT hidden, bip-pro-kopf-slider = hidden
+
+
 
 if __name__ == '__main__':
     updateGraph

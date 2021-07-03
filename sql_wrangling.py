@@ -1,3 +1,5 @@
+from re import A
+from pandas.core.frame import DataFrame
 import psycopg2
 
 import pandas as pd
@@ -14,13 +16,18 @@ def connect(sql_query):
 def getcountries():
     df = connect("SELECT * FROM project.commoncountries")
     df.rename(columns={"countryname": "label", "countrycode":"value"},  inplace = True)
-    
+
     #Welt, statt Countries auswählen
-    df.loc[-1] = ["World", "WRD"]
+    df.loc[-1] = ["World", 'WRD']
     df.index = df.index + 1
     df = df.sort_index()
-
+    
     return df.to_dict("records")
+
+def g_all():
+    df = connect("SELECT * FROM project.commoncountries")
+    all_country = df["countrycode"].values.tolist()
+    return all_country
 
 
 def get_df_for_button1():
@@ -38,7 +45,7 @@ def get_df_for_init():
 
 #ToDo: Reihen fixen, wegen Verbindung letzter und erster Punkt
 
-def mask_df_gdp(df, bip, ernEnergie, per_capita):
+def mask_df_gdp(df, bip, ernEnergie,per_capita):
     
     bip_min, bip_max = bip
     ernEn_min, ernEn_max = ernEnergie
@@ -49,9 +56,10 @@ def mask_df_gdp(df, bip, ernEnergie, per_capita):
     
     if per_capita:
         filter_by_bip = (df["gdp_per_capita"] >= bip_min*factor_for_bip) & (df["gdp_per_capita"] < bip_max*factor_for_bip)  
-    else: filter_by_bip = (df["gdp"] >= bip_min*factor_for_bip) & (df["gdp"] < bip_max*factor_for_bip) 
+    else: 
+        filter_by_bip = (df["gdp"] >= bip_min*factor_for_bip) & (df["gdp"] < bip_max*factor_for_bip) 
     filter_by_ernEn = (df["perc_renen"] >= ernEn_min) & (df["perc_renen"] < ernEn_max)
-    
+
     rslt_df = df[filter_by_ernEn & filter_by_bip] 
     
     return rslt_df
@@ -69,3 +77,10 @@ def mask_df_emi(df, emission, ernEnergie):
     rslt_df = df[filter_by_emission & filter_by_ernEn]
     
     return rslt_df
+
+def country_filter(country_selec, local_df):
+    df = local_df[local_df['countrycode'] == None]
+    for i in country_selec:
+        a = local_df[local_df['countrycode'] == i]
+        df = pd.concat([df,a], axis=0, join='inner')
+    return df
