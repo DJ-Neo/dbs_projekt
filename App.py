@@ -1,3 +1,8 @@
+#Damit alles funktioniert müssen folgende Libraries installiert werden
+#pip install dash
+#pip install pandas
+#pip install psycopg2
+
 import dash
 import dash_html_components as html
 import dash_core_components as dcc
@@ -41,6 +46,7 @@ app.layout = html.Div([
             dcc.RangeSlider(
                 id='rs-bip',
                 min=0, max=22000, step=0.1,
+                
                 marks={0: '0 USD', 22000: '22.000 * Milliarden USD'},
                 value=[0, 22000]
             )
@@ -171,7 +177,6 @@ def updateGraph(bip, bip_c, emission, ernEnergie, graph_select,country_selec):
                         )
 
     return fig, hidden_bip_slider, hidden_bip_pk_slider, hidden_co2_slider     #  Wenn True -> bip-slider = NOT hidden, bip-pro-kopf-slider = hidden
-
 
 
 if __name__ == '__main__':
